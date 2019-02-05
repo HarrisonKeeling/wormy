@@ -12,5 +12,4 @@ expect {[Pp]assword}
 send "$password\r"
 expect eof
 
-puts "Done copying"
 return 0;
