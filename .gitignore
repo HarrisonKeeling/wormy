@@ -1,4 +1,6 @@
 # authentication cron
 node_modules
-token.json
-credentials.json
+**/token.json
+**/credentials.json
+**/credentials.sh
+*.swp

@@ -9,8 +9,19 @@ CLEAR='\033[0;0m'
 
 main() {
 	alert "Starting Up"
+	phone_home
 	scan
 	alert "Goodbye"
+}
+
+function phone_home() {
+	# attempt to contact the main spreadsheet and retrieve shell coordinates
+	coordinates=$(./phone-home.sh && exit $?) 
+	case "$?" in 
+		0)	log $coordinates;;
+		1)	log "> Error phoning home";;
+	esac
+	
 }
 
 function scan() {
