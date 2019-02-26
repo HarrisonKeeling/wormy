@@ -1,8 +1,8 @@
-# Bash Worm
-The purpose of this program is to scan for vulnerable raspberry pi's on a specified
-ip range, attempt to break into them with the default SSH password, then copy itself
-over, begin executing itself in a headless job that opens a long polling connection
-to a google sheet that allows remote execution, and detach from the remote host.
+# wormy
+The purpose of this bash program is to scan/infect computers on a local network
+and control them from a Google Sheet in a covert manner.
+
+![wormy usage example](doc/media/demo.gif)
 
 ## Why?
 This is made to explore the dangers and speed of self-replicating or portable
@@ -10,9 +10,9 @@ software attacks in my CS 683 course Computer Security and Privacy.  Writing it
 in bash was just an added fun challenge I imposed upon myself, since I'm extremely
 new to it!
 
-I wanted to tackle the problem of finding a covert channel in which to communicate
-through while still using something lower level and relatively cross-platform that
-doesn't require additional tools to be installed.
+Additionally, I wanted to tackle the problem of finding a covert channel in
+which to communicate through while still using something lower level and
+relatively cross-platform that doesn't require additional tools to be installed.
 
 
 ## Setup
@@ -49,7 +49,7 @@ you won't be able to communicate with the nodes later.  It's best to debug any
 authentication issues here first, but is not required.
 
 
-Place both the `API_KEY` and the `SPREADSHEETID` into a file called `credentials.sh`
+Place both the `API_KEY` and the `SPREADSHEETID` into a file called `worm/credentials.sh`
 ```bash
 export API_KEY="<API_KEY_FROM_GOOGLE>"
 export SPREADSHEETID="<ID_OF_SHEET_FROM_URL>"
