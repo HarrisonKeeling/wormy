@@ -1,7 +1,8 @@
 # Bash Worm
 The purpose of this program is to scan for vulnerable raspberry pi's on a specified
 ip range, attempt to break into them with the default SSH password, then copy itself
-over, begin executing itself in a headless job, and detach from the remote host.
+over, begin executing itself in a headless job that opens a long polling connection
+to a google sheet that allows remote execution, and detach from the remote host.
 
 ## Why?
 This is made to explore the dangers and speed of self-replicating or portable
@@ -9,30 +10,89 @@ software attacks in my CS 683 course Computer Security and Privacy.  Writing it
 in bash was just an added fun challenge I imposed upon myself, since I'm extremely
 new to it!
 
-## How it works
-Currently, the main executable is `worm.sh`.  This file manages the scanning of
-the network for open ssh ports, then starts up `probe.sh`, an expect shell script, 
-to attempt to ssh into it.  If the probe script can successfully ssh into it, 
-it spins up `copy.sh` in the background to copy the entire directory over over
-`scp` using the password that was used to ssh into the device.  Then, the probe
-script continues by starting up `worm.sh` on the remote device, then detaches from
-the job to allow it to run once the ssh connection is closed.
+I wanted to tackle the problem of finding a covert channel in which to communicate
+through while still using something lower level and relatively cross-platform that
+doesn't require additional tools to be installed.
 
-## Current Limitations
-- The program has been hard coded to only scan a default range, this ideally would
-be able to be changed via a command line argument -- I just have not implemented it
-yet.
-- I'd love to make the `probe.sh` script run parallel for each target ip
-- Only raspberry pi's with the username `pi` and password of `raspberry` will
-be broken into.  This is a safety design feature or limitation, depending on who you
-are.  The probe script has been written to take any username/ip/password combination
-which allows this to be changed easily.  However, I'd like to implement the optionality
-to iterate over a list of passwords to try -- I have the functionality to keep retying
-a password, but it's not very useful if I can't change the password content for a brute
-force style attack.
-- It's not hidden very well in its current state.
-- The worm really doesn't do much...  It is moreso "portable software" at this point.
-I plan to fix this by opening a long polling connection to a remote server to allow
-remote execution on a device once the worm is installed.  Would love to take the time
-to explore putting a vulnerability at the spearhead to be able to do more advanced
-attacks
+
+## Setup
+
+#### Configuring the Covert Channel
+After cloning the repository, you'll want to duplicate this public
+[Google Sheet](https://docs.google.com/spreadsheets/d/1aEhIRQKObcJggyaIar-TxUxpMT5q946bVGL30yWdz4g/edit?usp=sharing)
+that acts as the homing location and control system for the infected nodes.
+
+Next, you'll want to create both a Google Sheets API token **and** a service
+account.
+> **Note:** We need both, as a token is required to retrieve contents from the sheet, 
+but we need an authenticated session to use any POST/PUT commands.  We'll
+use this service account to generate an authenticated session that will automatically
+transfer the session's `authentication token` over the sheet and be shared by the infected nodes
+
+When a service account is created, you should be able to download a `json` file
+that contains credentials for authentication purposes... It contains information
+such as the `client_secret` and `project_id`.  Place this file in the `/cron`
+directory.
+
+You should be able to run
+```bash
+cd cron
+npm install
+
+node index.js
+```
+from your host device, follow the auth-flow,
+and watch the spreadsheet be updated with an `authentication token`
+
+> **Note:** If you don't see an `authentication token` placed in the sheet, then
+you won't be able to communicate with the nodes later.  It's best to debug any
+authentication issues here first, but is not required.
+
+
+Place both the `API_KEY` and the `SPREADSHEETID` into a file called `credentials.sh`
+```bash
+export API_KEY="<API_KEY_FROM_GOOGLE>"
+export SPREADSHEETID="<ID_OF_SHEET_FROM_URL>"
+```
+> **Note:** This file is automatically sourced when `worm.sh` is spun up on the remote device,
+but there may be better more covert ways to store these for the possibility of revoking
+access, just as we can with the `authentication token`
+
+
+You can test to see if your credentials are configured correctly by doing something
+like
+```bash
+cd worm
+
+source credentials.sh
+./phone-home.sh $API_KEY $SPREADSHEETID
+```
+which should return the `authentication token` we generated earlier and a parameter
+that specifies the row in which it will be communicating on.  If you see this, you're
+good to go and can begin distributing your worm.
+
+#### How the Covert Channel Works
+In order to circumvent using a suspicous looking IP or traffic behaviors on a network
+level, I decided to use Google Sheets.  The sheet provides functionality to view
+the
+- `Device Name`
+- `Public IP Address`
+- `Refresh Rate` in seconds, the time to sleep between pinging the Google Sheet
+- `Input` command line input
+- `Output` command line output
+- `Last Ping` date in the format of the remote device's timezone
+
+#### Running and Distribution
+If you've correctly configured the communication channel, you can then specify
+your range of IPs to probe by altering the `nmap` command in the scan function
+of `worm.sh`
+
+Once you are on a target network, you can begin the process by running `worm.sh`
+
+## Caveats
+This program is hard coded to only infect raspberry pi's with the default password,
+to avoid uncontrolled infections.  You can surely alter this to a desired username
+or password.  I plan to add dictionary attacks in the future but after adding a failsafe
+to kill a worm remotely via the Google Sheet (I guess you could, by using remote bash
+commands like `ps` and `kill` but this could become tedius when the worm is spreading
+rapidly).

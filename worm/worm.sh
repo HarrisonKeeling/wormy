@@ -9,6 +9,7 @@ CLEAR='\033[0;0m'
 
 main() {
 	alert "Starting Up"
+	source ./credentials.sh
 	phone_home &
 	scan
 	wait
@@ -33,10 +34,9 @@ function phone_home() {
 }
 
 function scan() {
+	# You can add `--open` to the nmap command to filter on only open 22 port IPs
 	command="nmap -p 22 -oG - -sV 10.1.63.0-255 | grep -op 'Host:.*ssh.*'
 		| awk '{print \$2}'"
-
-	# Remember to add `--open` to the above command to filter
 	
 	log $command
 	target_list=$(eval $command)
