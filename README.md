@@ -2,6 +2,7 @@
 The purpose of this bash program is to scan/infect computers on a local network
 and control them from a Google Sheet in a covert manner.
 
+![wormy mascot](doc/media/doodles.jpg)
 ![wormy usage example](doc/media/demo.gif)
 
 ## Why?
