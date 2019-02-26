@@ -96,3 +96,7 @@ or password.  I plan to add dictionary attacks in the future but after adding a 
 to kill a worm remotely via the Google Sheet (I guess you could, by using remote bash
 commands like `ps` and `kill` but this could become tedius when the worm is spreading
 rapidly).
+
+Additionally, the `cron/index.js` process to generate an `authentication token`
+is not currently automated.  I'm still working on a way to run it on a cron job,
+but in the meantime it holds the name of what it aspires to be :p
